@@ -1,0 +1,56 @@
+info:
+  name: 01_initiate-negotiation
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{consumer}}/api/management/v4/contractnegotiations"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2",
+            "https://w3id.org/catenax/2025/9/policy/context.jsonld"
+          ],
+          "@type": "ContractRequest",
+          "protocol": "dataspace-protocol-http:2025-1",
+          "counterPartyAddress": "http://provider-controlplane.edc.svc.cluster.local:8082/api/dsp/2025-1",
+          "policy": {
+            "@id": "{{offer-id}}",
+            "@type": "Offer",
+            "target": "{{asset-id}}",
+            "assigner": "did:web:identityhub.edc.svc.cluster.local%3A7083:provider",
+            "permission": [{
+              "action": "use",
+              "constraint": [
+                {
+                  "leftOperand": "FrameworkAgreement",
+                  "operator": "eq",
+                  "rightOperand": "DataExchangeGovernance:1.0"
+                },
+                {
+                  "leftOperand": "UsagePurpose",
+                  "operator": "isAnyOf",
+                  "rightOperand": "DataPlaneTest"
+                }
+              ]
+            }]
+          }
+        }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if(res.status >= 200 && res.status <= 299) {
+          bru.setEnvVar("negotiation-id", res.getBody()['@id']);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

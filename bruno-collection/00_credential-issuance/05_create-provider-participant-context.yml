@@ -1,0 +1,38 @@
+info:
+  name: 05_create-provider-participant-context
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{identityhub}}/api/identity/participants"
+  body:
+    type: json
+    data: |-
+      {
+        "participantContextId": "provider",
+        "did": "did:web:identityhub.edc.svc.cluster.local%3A7083:provider",
+        "active": true,
+        "keys": [{
+          "keyId": "did:web:identityhub.edc.svc.cluster.local%3A7083:provider#key1",
+          "privateKeyAlias": "provider-sts-private-key",
+          "keyGeneratorParams":{
+              "algorithm": "EdDSA",
+              "curve": "Ed25519"
+           }
+        }],
+        "serviceEndpoints": [
+          {
+            "id": "credential-service",
+            "type": "CredentialService",
+            "serviceEndpoint": "http://identityhub.edc.svc.cluster.local:7082/api/credentials/v1/participants/provider"
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

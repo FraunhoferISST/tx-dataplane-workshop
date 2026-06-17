@@ -1,0 +1,26 @@
+name: Kind - Local
+variables:
+  - name: issuer
+    value: http://issuer.localhost
+  - name: identityhub
+    value: http://ih.localhost
+  - name: provider
+    value: http://provider.localhost
+  - name: consumer
+    value: http://consumer.localhost
+  - name: asset-id
+    value: test
+  - name: access-policy-id
+    value: test-access
+  - name: contract-policy-id
+    value: test-contract
+  - name: contract-definition-id
+    value: test
+  - name: offer-id
+    value: ""
+  - name: negotiation-id
+    value: ""
+  - name: contract-id
+    value: ""
+  - name: transfer-id
+    value: ""

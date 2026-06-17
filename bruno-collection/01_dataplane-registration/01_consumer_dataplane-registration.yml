@@ -1,0 +1,28 @@
+info:
+  name: 01_consumer_dataplane-registration
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{consumer}}/api/management/v4/dataplanes"
+  body:
+    type: json
+    data: |-
+      {
+        "dataplaneId": "consumer-siglet",
+        "endpoint": "http://consumer-siglet.edc.svc.cluster.local:8081/api/v1/consumer/dataflows",
+        "transferTypes": [
+          "HttpData-PULL"
+        ],
+        "labels": [
+          "http"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

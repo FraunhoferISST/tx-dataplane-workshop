@@ -1,0 +1,38 @@
+info:
+  name: 07_create-consumer-participant-context
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{identityhub}}/api/identity/participants"
+  body:
+    type: json
+    data: |-
+      {
+        "participantContextId": "consumer",
+        "did": "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer",
+        "active": true,
+        "keys": [{
+          "keyId": "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer#key1",
+          "privateKeyAlias": "consumer-sts-private-key",
+          "keyGeneratorParams":{
+              "algorithm": "EdDSA",
+              "curve": "Ed25519"
+           }
+        }],
+        "serviceEndpoints": [
+          {
+            "id": "credential-service",
+            "type": "CredentialService",
+            "serviceEndpoint": "http://identityhub.edc.svc.cluster.local:7082/api/credentials/v1/participants/consumer"
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

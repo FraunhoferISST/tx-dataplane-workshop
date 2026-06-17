@@ -1,0 +1,96 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: edc
+  labels:
+    platform: edc
+    type: edc-infra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        platform: edc
+        type: edc-infra
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17.7-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "providercontrolplane"
+            - name: POSTGRES_USER
+              value: "pcp"
+            - name: POSTGRES_PASSWORD
+              value: "pcp"
+          volumeMounts:
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: init-script
+          configMap:
+            name: postgres-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: edc
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: edc
+data:
+  init.sql: |   
+    CREATE DATABASE consumercontrolplane;
+    CREATE USER ccp WITH PASSWORD 'ccp';
+    GRANT ALL PRIVILEGES ON DATABASE consumercontrolplane TO ccp;
+    \c consumercontrolplane
+    GRANT ALL ON SCHEMA public TO ccp;
+    
+    CREATE DATABASE identityhub;
+    CREATE USER ih WITH PASSWORD 'ih';
+    GRANT ALL PRIVILEGES ON DATABASE identityhub TO ih;
+    \c identityhub
+    GRANT ALL ON SCHEMA public TO ih;
+    
+    CREATE DATABASE issuerservice;
+    CREATE USER issuer WITH PASSWORD 'issuer';
+    GRANT ALL PRIVILEGES ON DATABASE issuerservice TO issuer;
+    \c issuerservice
+    GRANT ALL ON SCHEMA public TO issuer;
+    
+    CREATE DATABASE providersigletdb;
+    CREATE USER psiglet WITH PASSWORD 'psiglet';
+    GRANT ALL PRIVILEGES ON DATABASE providersigletdb TO psiglet;
+    \c providersigletdb
+    GRANT ALL ON SCHEMA public TO psiglet;
+
+    CREATE DATABASE consumersigletdb;
+    CREATE USER csiglet WITH PASSWORD 'csiglet';
+    GRANT ALL PRIVILEGES ON DATABASE consumersigletdb TO csiglet;
+    \c consumersigletdb
+    GRANT ALL ON SCHEMA public TO csiglet;
+
+    CREATE DATABASE jwtlet;
+    CREATE USER jwtlet WITH PASSWORD 'jwtlet';
+    GRANT ALL PRIVILEGES ON DATABASE jwtlet TO jwtlet;
+    \c jwtlet
+    GRANT ALL ON SCHEMA public TO jwtlet;

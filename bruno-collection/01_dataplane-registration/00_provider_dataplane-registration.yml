@@ -1,0 +1,28 @@
+info:
+  name: 00_provider_dataplane-registration
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{provider}}/api/management/v4/dataplanes"
+  body:
+    type: json
+    data: |-
+      {
+        "dataplaneId": "provider-siglet",
+        "endpoint": "http://provider-siglet.edc.svc.cluster.local:8081/api/v1/provider/dataflows",
+        "transferTypes": [
+          "HttpData-PULL"
+        ],
+        "labels": [
+          "http"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

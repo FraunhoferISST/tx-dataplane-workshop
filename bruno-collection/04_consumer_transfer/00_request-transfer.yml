@@ -1,0 +1,36 @@
+info:
+  name: 00_request-transfer
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{consumer}}/api/management/v4/transferprocesses"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2"
+          ],
+          "@type": "TransferRequest",
+          "protocol": "dataspace-protocol-http:2025-1",
+          "counterPartyAddress": "http://provider-controlplane.edc.svc.cluster.local:8082/api/dsp/2025-1",
+          "contractId": "{{contract-id}}",
+          "transferType": "HttpData-PULL"
+        }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if(res.status >= 200 && res.status <= 299) {
+          bru.setEnvVar("transfer-id", res.getBody()['@id']);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

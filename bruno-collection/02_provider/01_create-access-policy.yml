@@ -1,0 +1,41 @@
+info:
+  name: 01_create-access-policy
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{provider}}/api/management/v4/policydefinitions"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2",
+            "https://w3id.org/catenax/2025/9/policy/context.jsonld"
+          ],
+          "@type": "PolicyDefinition",
+          "@id": "{{access-policy-id}}",
+          "policy": {
+            "@type": "Set",
+            "permission": [
+              {
+                "action": "access",
+                "constraint": [
+                  {
+                    "leftOperand": "Membership",
+                    "operator": "eq", 
+                    "rightOperand": "active" 
+                  }
+                ]
+              }
+            ]
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

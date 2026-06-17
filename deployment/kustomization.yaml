@@ -1,0 +1,9 @@
+resources:
+  - edc-namespace.yaml
+  - gateway-class.yaml
+  - gateway.yaml
+
+  - postgres.yaml
+  - vault.yaml
+  - telemetry/
+  - runtimes/

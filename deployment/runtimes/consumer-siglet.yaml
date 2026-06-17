@@ -1,0 +1,205 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: consumer-siglet-sa
+  namespace: edc
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-siglet
+  namespace: edc
+  labels:
+    app: consumer-siglet
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer-siglet
+  template:
+    metadata:
+      labels:
+        app: consumer-siglet
+    spec:
+      serviceAccountName: consumer-siglet-sa
+      initContainers:
+        # Native sidecar: starts and stays running before the main containers,
+        # writing the Vault token to /vault/secrets/.vault-token.
+        - name: consumer-vault-agent
+          image: hashicorp/vault:latest
+          restartPolicy: Always
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK
+          args:
+            - "agent"
+            - "-config=/vault/config/vault-agent-config.hcl"
+            - "-log-level=debug"
+          env:
+            - name: VAULT_ADDR
+              value: "http://vault:8200"
+          volumeMounts:
+            - name: vault-agent-config
+              mountPath: /vault/config
+            - name: vault-secrets
+              mountPath: /vault/secrets
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+        # Block startup until the Vault token has actually been written, so
+        # siglet never starts before the token file exists.
+        - name: consumer-wait-for-vault-token
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Vault token..."
+              until [ -f /vault/secrets/.vault-token ]; do
+                sleep 1
+              done
+              echo "Vault token available"
+          volumeMounts:
+            - name: vault-secrets
+              mountPath: /vault/secrets
+              readOnly: true
+      volumes:
+        - name: vault-secrets
+          emptyDir: { }
+        - name: vault-agent-config
+          configMap:
+            name: vault-agent-config-siglet
+            items:
+              - key: vault-agent-config.hcl
+                path: vault-agent-config.hcl
+        - name: siglet-config
+          configMap:
+            name: consumer-siglet-config
+      containers:
+        - name: consumer-siglet
+          image: ghcr.io/eclipse-dataplane-core/dsdk-facet-rs/siglet:sha-797cfac
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: signaling
+              containerPort: 8081
+              protocol: TCP
+            - name: refresh
+              containerPort: 8082
+              protocol: TCP
+          env:
+            - name: RUST_LOG
+              value: "info,siglet=debug"
+            - name: SIGLET__SIGLET_API_PORT
+              value: "8080"
+            - name: SIGLET__SIGNALING_PORT
+              value: "8081"
+            - name: SIGLET__REFRESH_API_PORT
+              value: "8082"
+            - name: SIGLET_CONFIG_FILE
+              value: "/config/siglet.toml"
+            - name: SIGLET__VAULT__URL
+              value: "http://vault:8200"
+            - name: SIGLET__VAULT__TOKEN_FILE
+              value: "/vault/secrets/.vault-token"
+            - name: SIGLET__VAULT__SIGNING_KEY_NAME
+              value: "signing-siglet"
+            - name: SIGLET__VAULT__USE_HTTP_RESOLUTION
+              value: "true"
+            - name: SIGLET__TOKEN__ISSUER
+              value: "siglet-issuer"
+            - name: SIGLET__TOKEN__REFRESH_ENDPOINT
+              value: "http://siglet.edc.svc.cluster.local:8082/token/refresh"
+          volumeMounts:
+            - name: siglet-config
+              mountPath: /config
+              readOnly: true
+            - name: vault-secrets
+              mountPath: /vault/secrets
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-siglet
+  namespace: edc
+  labels:
+    app: consumer-siglet
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: signaling
+      port: 8081
+      targetPort: signaling
+      protocol: TCP
+    - name: refresh
+      port: 8082
+      targetPort: refresh
+      protocol: TCP
+  selector:
+    app: consumer-siglet
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: consumer-siglet
+  namespace: edc
+spec:
+  parentRefs:
+    - name: edc-gateway
+      kind: Gateway
+      sectionName: http
+  hostnames:
+    - consumer.localhost
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/siglet
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: consumer-siglet
+          port: 8080
+          weight: 1

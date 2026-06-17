@@ -1,0 +1,122 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-identityhub
+  namespace: edc
+  labels:
+    app: consumer-identityhub
+    type: edc-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: consumer-identityhub
+  template:
+    metadata:
+      labels:
+        app: consumer-identityhub
+        platform: edc
+        type: edc-app
+    spec:
+      containers:
+        - name: consumer-identityhub
+          image: identityhub:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: consumer-ih-config
+            - configMapRef:
+                name: telemetry-config
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: edc.identityhub
+          ports:
+            - containerPort: 7082
+              name: creds-port
+            - containerPort: 1044
+              name: debug
+            - containerPort: 7081
+              name: identity-api
+            - containerPort: 7083
+              name: did
+            - containerPort: 7080
+              name: web
+
+          livenessProbe:
+            httpGet:
+              path: /api/check/liveness
+              port: 7080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 120
+          readinessProbe:
+            httpGet:
+              path: /api/check/readiness
+              port: 7080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 120
+          startupProbe:
+            httpGet:
+              path: /api/check/startup
+              port: 7080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 120
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: consumer-identityhub
+  namespace: edc
+spec:
+  type: ClusterIP
+  selector:
+    app: consumer-identityhub
+  ports:
+    - port: 7082
+      targetPort: 7082
+      name: creds-port
+    - port: 1044
+      targetPort: 1044
+      name: debug
+    - port: 7081
+      targetPort: 7081
+      name: identity-api
+    - port: 7083
+      targetPort: 7083
+      name: did
+    - port: 7084
+      targetPort: 7084
+      name: sts
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: consumer-identityhub
+  namespace: edc
+spec:
+  parentRefs:
+    - name: edc-gateway
+      kind: Gateway
+      sectionName: http
+  hostnames:
+    - consumer.localhost
+  rules:
+    # /ih/cs → identity API port 7081 (/ih/cs/** rewrites to /api/identity/**)
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/identity
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /api/identity/v1beta
+      backendRefs:
+        - name: identityhub
+          port: 7081

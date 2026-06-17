@@ -1,0 +1,35 @@
+info:
+  name: 03_create-contract-definition
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{provider}}/api/management/v4/contractdefinitions"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2"
+          ],
+          "@type": "ContractDefinition",
+          "@id": "{{contract-definition-id}}",
+          "accessPolicyId": "{{access-policy-id}}",
+          "contractPolicyId": "{{contract-policy-id}}",
+          "assetsSelector": [
+            {
+              "@type": "Criterion",
+              "operandLeft": "https://w3id.org/edc/v0.0.1/ns/id",
+              "operator" : "=",
+              "operandRight" : "test"
+            }
+          ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

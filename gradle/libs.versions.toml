@@ -1,0 +1,54 @@
+[metadata]
+format.version = "1.1"
+
+[versions]
+edc = "0.18.0-SNAPSHOT"
+edc-build = "1.5.2"
+tx-edc = "0.13.0-rc3"
+edc-cp = "0.17.0"
+rsApi = "4.0.0"
+opentelemetry = "2.26.1"
+
+[libraries]
+# EDC BOM modules
+edc-bom-identityhub = { module = "org.eclipse.edc:identityhub-bom", version.ref = "edc" }
+edc-bom-identityhub-sql = { module = "org.eclipse.edc:identityhub-feature-sql-bom", version.ref = "edc" }
+edc-bom-issuerservice = { module = "org.eclipse.edc:issuerservice-bom", version.ref = "edc" }
+edc-bom-issuerservice-sql = { module = "org.eclipse.edc:issuerservice-feature-sql-bom", version.ref = "edc" }
+
+# Other EDC modules
+edc-core-boot = { module = "org.eclipse.edc:boot", version.ref = "edc" }
+edc-core-runtime = { module = "org.eclipse.edc:runtime-core", version.ref = "edc" }
+edc-core-token = { module = "org.eclipse.edc:token-core", version.ref = "edc" }
+edc-core-participantcontext-config = { module = "org.eclipse.edc:participant-context-config-core", version.ref = "edc" }
+edc-vault-hashicorp = { module = "org.eclipse.edc:vault-hashicorp", version.ref = "edc" }
+edc-store-participantcontext-config-sql = { module = "org.eclipse.edc:participantcontext-config-store-sql", version.ref = "edc" }
+edc-lib-token = { module = "org.eclipse.edc:token-lib", version.ref = "edc" }
+edc-lib-keys = { module = "org.eclipse.edc:keys-lib", version.ref = "edc" }
+edc-lib-oauth2-authn = { module = "org.eclipse.edc:auth-authentication-oauth2-lib", version.ref = "edc" }
+edc-core-http = { module = "org.eclipse.edc:http", version.ref = "edc" }
+edc-core-connector = { module = "org.eclipse.edc:connector-core", version.ref = "edc" }
+edc-api-observability = { module = "org.eclipse.edc:api-observability", version.ref = "edc" }
+edc-monitor-otel = { module = "org.eclipse.edc:otel-monitor", version.ref = "edc" }
+edc-monitor-console = { module = "org.eclipse.edc:console-monitor", version.ref = "edc" }
+edc-vault-transit = { module = "org.eclipse.edc:identity-hub-keypairs-transit", version.ref = "edc" }
+edc-spi-web = { module = "org.eclipse.edc:web-spi", version.ref = "edc" }
+edc-ih-api-did = { module = "org.eclipse.edc:did-api", version.ref = "edc" }
+edc-ih-api-participants = { module = "org.eclipse.edc:participant-context-api", version.ref = "edc" }
+edc-issuance-spi = { module = "org.eclipse.edc:issuerservice-issuance-spi", version.ref = "edc" }
+
+# Controlplane modules (different EDC version to match latest Tractus-X EDC release)
+edc-spi-core = { module = "org.eclipse.edc:core-spi", version.ref = "edc-cp" }
+edc-dps = { module = "org.eclipse.edc:data-plane-signaling", version.ref = "edc-cp" }
+tx-edc-cp = { module = "org.eclipse.tractusx.edc:edc-controlplane-postgresql-hashicorp-vault", version.ref = "tx-edc" }
+tx-spi-bdrs = { module = "org.eclipse.tractusx.edc:bdrs-client-spi", version.ref = "tx-edc" }
+
+# Third party modules
+jakarta-rsApi = { module = "jakarta.ws.rs:jakarta.ws.rs-api", version.ref = "rsApi" }
+opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp", version = "1.61.0" }
+opentelemetry-javaagent = { module = "io.opentelemetry.javaagent:opentelemetry-javaagent", version.ref = "opentelemetry" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
+edc-build = { id = "org.eclipse.edc.edc-build", version.ref = "edc-build" }
+docker = { id = "com.bmuschko.docker-remote-api", version = "10.0.0" }

@@ -1,0 +1,29 @@
+info:
+  name: 02_create-consumer-holder
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{issuer}}//api/admin/participants/issuer/holders"
+  body:
+    type: json
+    data: |-
+      {
+        "participantContextId": "issuer",
+        "holderId": "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer",
+        "did": "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer",
+        "holderName": "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer",
+        "anonymous": false,
+        "properties": {
+          "bpn": "BPNL0000CONSUMER",
+          "contractVersion": "1.0"
+        }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

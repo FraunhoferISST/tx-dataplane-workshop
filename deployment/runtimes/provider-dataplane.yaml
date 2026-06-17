@@ -1,0 +1,108 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: provider-dataplane
+  namespace: edc
+  labels:
+    app: provider-dataplane
+    type: edc-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: provider-dataplane
+  template:
+    metadata:
+      labels:
+        app: provider-dataplane
+        platform: edc
+        type: edc-app
+    spec:
+      containers:
+        - name: provider-dataplane
+          image: dataplane:latest
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: provider-dataplane-config
+            - configMapRef:
+                name: telemetry-config
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "edc.provider-dataplane"
+          ports:
+            - containerPort: 1044
+              name: debug-port
+            - containerPort: 8888
+              name: data-port
+            - containerPort: 8080
+              name: health-port
+          livenessProbe:
+            httpGet:
+              path: /api/check/liveness
+              port: 8080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/check/readiness
+              port: 8080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 30
+          startupProbe:
+            httpGet:
+              path: /api/check/startup
+              port: 8080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: provider-dataplane
+  namespace: edc
+spec:
+  type: ClusterIP
+  selector:
+    app: provider-dataplane
+  ports:
+    - name: health
+      port: 8080
+      targetPort: 8080
+    - name: data
+      port: 8888
+      targetPort: 8888
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: provider-dataplane
+  namespace: edc
+spec:
+  parentRefs:
+    - name: edc-gateway
+      namespace: edc
+      sectionName: http
+  hostnames:
+    - provider.localhost
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/dp
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: provider-dataplane
+          port: 8888
+          weight: 1

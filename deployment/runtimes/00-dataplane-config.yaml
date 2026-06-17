@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: provider-dataplane-config
+  namespace: edc
+data:
+  edc.hostname: "provider-dataplane.edc.svc.cluster.local"
+
+  web.http.port: "8080"
+  web.http.path: "/api"
+
+  JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044"
+
+  edc.dataplane.iam.siglet.issuer: "siglet-issuer"
+  edc.dataplane.iam.siglet.jwks.url: "http://provider-siglet.edc.svc.cluster.local:8080/keys"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: consumer-dataplane-config
+  namespace: edc
+data:
+  edc.hostname: "consumer-dataplane.edc.svc.cluster.local"
+
+  web.http.port: "8080"
+  web.http.path: "/api"
+
+  JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044"
+
+  edc.dataplane.iam.siglet.issuer: "siglet-issuer"
+  edc.dataplane.iam.siglet.jwks.url: "http://consumer-siglet.edc.svc.cluster.local:8080/keys"

@@ -1,0 +1,46 @@
+info:
+  name: 02_create-contract-policy
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{provider}}/api/management/v4/policydefinitions"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2",
+            "https://w3id.org/catenax/2025/9/policy/context.jsonld"
+          ],
+          "@type": "PolicyDefinition",
+          "@id": "{{contract-policy-id}}",
+          "policy": {
+            "@type": "Set",
+            "permission": [
+              {
+                "action": "use",
+                "constraint": [
+                  {
+                    "leftOperand": "FrameworkAgreement",
+                    "operator": "eq",
+                    "rightOperand": "DataExchangeGovernance:1.0"
+                  },
+                  {
+                    "leftOperand": "UsagePurpose",
+                    "operator": "isAnyOf",
+                    "rightOperand": "DataPlaneTest"
+                  }
+                ]
+              }
+            ]
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

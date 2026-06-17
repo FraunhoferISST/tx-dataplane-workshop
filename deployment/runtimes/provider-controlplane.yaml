@@ -1,0 +1,116 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: provider-controlplane
+  namespace: edc
+  labels:
+    app: provider-controlplane
+    type: edc-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: provider-controlplane
+  template:
+    metadata:
+      name: provider-controlplane
+      labels:
+        app: provider-controlplane
+        platform: edc
+        type: edc-app
+    spec:
+      containers:
+        - name: provider-controlplane
+          image: controlplane:latest
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef: { name: provider-controlplane-config }
+            - configMapRef:
+                name: telemetry-config
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: edc.provider-controlplane
+          ports:
+            - containerPort: 8081
+              name: management-port
+            - containerPort: 8080
+              name: default-port
+            - containerPort: 1044
+              name: debug-port
+          livenessProbe:
+            httpGet:
+              path: /api/check/liveness
+              port: 8080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 120
+          readinessProbe:
+            httpGet:
+              path: /api/check/readiness
+              port: 8080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 120
+          startupProbe:
+            httpGet:
+              path: /api/check/startup
+              port: 8080
+            failureThreshold: 10
+            periodSeconds: 5
+            timeoutSeconds: 120
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: provider-controlplane
+  namespace: edc
+spec:
+  type: ClusterIP
+  selector:
+    app: provider-controlplane
+  ports:
+    - name: health
+      port: 8080
+      targetPort: 8080
+    - name: management
+      port: 8081
+      targetPort: 8081
+    - name: protocol
+      port: 8082
+      targetPort: 8082
+    - name: debug
+      port: 1044
+      targetPort: 1044
+
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: provider-controlplane
+  namespace: edc
+spec:
+  parentRefs:
+    - name: edc-gateway
+      kind: Gateway
+      sectionName: http
+  hostnames:
+    - provider.localhost
+  rules:
+    # /cp → management API (port 8081, path /api/mgmt)
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/management
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /api/mgmt
+      backendRefs:
+        - name: provider-controlplane
+          port: 8081
+          weight: 1

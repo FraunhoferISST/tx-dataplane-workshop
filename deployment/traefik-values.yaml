@@ -1,0 +1,32 @@
+accessLog:
+  enabled: true
+  format: json
+  fields:
+    general:
+      # full field list
+      # https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#json-format-fields
+      names:
+        RouterName: drop
+ports:
+  web:
+    port: 8000
+    exposedPort: 8000
+  websecure:
+    port: 443
+    exposedPort: 443
+
+# we enable gateway-api features
+providers:
+  kubernetesGateway:
+    enabled: true
+  kubernetesCRD:
+    # -- Load Kubernetes IngressRoute provider
+    enabled: true
+
+# we disable gateway-api defaults because we want to provide our own
+gatewayClass:
+  enabled: false
+
+# we disable gateway-api defaults because we want to provide our own
+gateway:
+  enabled: false

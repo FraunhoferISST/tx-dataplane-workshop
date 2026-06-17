@@ -1,0 +1,41 @@
+info:
+  name: 00_create-issuer-tenant
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{issuer}}/api/identity/participants"
+  body:
+    type: json
+    data: |-
+      {
+                        "roles": ["admin"],
+                        "serviceEndpoints": [
+                          {
+                            "type": "IssuerService",
+                            "serviceEndpoint": "http://issuerservice.edc.svc.cluster.local:10012/api/issuance/v1beta/participants/issuer",
+                            "id": "issuer-service-1"
+                          }
+                        ],
+                        "active": true,
+                        "participantContextId": "issuer",
+                        "did": "did:web:issuerservice.edc.svc.cluster.local%3A10016:issuer",
+                        "key": {
+                          "keyId": "did:web:issuerservice.edc.svc.cluster.local%3A10016:issuer#key-1",
+                          "privateKeyAlias": "key-1",
+                          "keyGeneratorParams": {
+                            "algorithm": "EdDSA"
+                          }
+                        },
+                        "additionalProperties": {
+                          
+                        }
+                      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

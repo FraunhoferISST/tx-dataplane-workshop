@@ -1,0 +1,7 @@
+info:
+  name: 01_dataplane-registration
+  type: folder
+  seq: 2
+
+request:
+  auth: inherit

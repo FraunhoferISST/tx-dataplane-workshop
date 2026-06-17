@@ -1,0 +1,37 @@
+info:
+  name: 00_request-catalog
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{consumer}}/api/management/v4/catalog/request"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2"
+          ],
+          "@type": "CatalogRequest",
+          "protocol": "dataspace-protocol-http:2025-1",
+          "counterPartyAddress": "http://provider-controlplane.edc.svc.cluster.local:8082/api/dsp/2025-1",
+          "counterPartyId": "did:web:identityhub.edc.svc.cluster.local%3A7083:provider"
+        }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        if(res.status >= 200 && res.status <= 299) {
+          const policyId = res.getBody()["dataset"][0]["hasPolicy"][0]["@id"];
+          
+          bru.setEnvVar("offer-id", policyId);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

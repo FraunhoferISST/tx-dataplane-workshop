@@ -1,0 +1,15 @@
+resources:
+  - 00-controlplane-config.yaml
+  - 00-dataplane-config.yaml
+  - 00-siglet-config.yaml
+  - 00-telemetry-config.yaml
+  - issuerservice-config.yaml
+  - issuerservice.yaml
+  - identityhub-config.yaml
+  - identityhub.yaml
+  - consumer-controlplane.yaml
+  - consumer-dataplane.yaml
+  - consumer-siglet.yaml
+  - provider-controlplane.yaml
+  - provider-dataplane.yaml
+  - provider-siglet.yaml

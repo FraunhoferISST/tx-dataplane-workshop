@@ -1,0 +1,108 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: provider-controlplane-config
+  namespace: edc
+data:
+  # base config
+  edc.hostname: "provider-controlplane.edc.svc.cluster.local"
+  edc.vault.hashicorp.url: "http://vault.edc.svc.cluster.local:8200"
+  edc.vault.hashicorp.token: "root"
+  edc.participant.id: "did:web:identityhub.edc.svc.cluster.local%3A7083:provider"
+  edc.participant.context.id: "provider"
+  tractusx.edc.participant.bpn: "BPNL0000PROVIDER"
+  edc.iam.did.web.use.https: "false"
+  edc.iam.credential.revocation.mimetype: "application/json"
+
+  edc.iam.sts.oauth.token.url: "http://identityhub.edc.svc.cluster.local:7084/api/sts/token"
+  edc.iam.sts.oauth.client.id: "did:web:identityhub.edc.svc.cluster.local%3A7083:provider"
+  edc.iam.sts.oauth.client.secret.alias: "provider-sts-client-secret"
+
+  # web config
+  web.http.port: "8080"
+  web.http.path: "/api"
+  web.http.protocol.port: "8082"
+  web.http.protocol.path: "/api/dsp"
+
+  web.http.management.port: "8081"
+  web.http.management.path: "/api/mgmt"
+  web.http.control.port: "8083"
+  web.http.control.path: "/api/control"
+
+  # database config
+  edc.datasource.default.url: "jdbc:postgresql://postgres.edc.svc.cluster.local:5432/providercontrolplane"
+  edc.datasource.default.user: "pcp"
+  edc.datasource.default.password: "pcp"
+
+  edc.encryption.aes.key.alias: "aes-key-alias"
+
+  tx.edc.iam.dcp.default-scopes.membership.alias: "org.eclipse.dspace.dcp.vc.type"
+  tx.edc.iam.dcp.default-scopes.membership.type: "https://w3id.org/catenax/credentials/MembershipCredential"
+  tx.edc.iam.dcp.default-scopes.membership.operation: "read"
+
+  tx.edc.iam.dcp.default-scopes.bpn.alias: "org.eclipse.dspace.dcp.vc.type"
+  tx.edc.iam.dcp.default-scopes.bpn.type: "https://w3id.org/catenax/credentials/BpnCredential"
+  tx.edc.iam.dcp.default-scopes.bpn.operation: "read"
+
+  tx.edc.iam.dcp.default-scopes.deg.alias: "org.eclipse.dspace.dcp.vc.type"
+  tx.edc.iam.dcp.default-scopes.deg.type: "https://w3id.org/catenax/credentials/DataExchangeGovernanceCredential"
+  tx.edc.iam.dcp.default-scopes.deg.operation: "read"
+
+  edc.iam.trustedissuer.issuer.id: "did:web:issuerservice.edc.svc.cluster.local%3A10016:issuer"
+
+  JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: consumer-controlplane-config
+  namespace: edc
+data:
+  # base config
+  edc.hostname: "consumer-controlplane.edc.svc.cluster.local"
+  edc.vault.hashicorp.url: "http://vault.edc.svc.cluster.local:8200"
+  edc.vault.hashicorp.token: "root"
+  edc.participant.context.id: "consumer"
+  edc.participant.id: "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer"
+  tractusx.edc.participant.bpn: "BPNL0000CONSUMER"
+  edc.iam.did.web.use.https: "false"
+  edc.iam.credential.revocation.mimetype: "application/json"
+
+  edc.iam.sts.oauth.token.url: "http://identityhub.edc.svc.cluster.local:7084/api/sts/token"
+  edc.iam.sts.oauth.client.id: "did:web:identityhub.edc.svc.cluster.local%3A7083:consumer"
+  edc.iam.sts.oauth.client.secret.alias: "consumer-sts-client-secret"
+
+  # web config
+  web.http.port: "8080"
+  web.http.path: "/api"
+  web.http.protocol.port: "8082"
+  web.http.protocol.path: "/api/dsp"
+  web.http.management.port: "8081"
+  web.http.management.path: "/api/mgmt"
+  web.http.control.port: "8083"
+  web.http.control.path: "/api/control"
+
+  # database config
+  edc.datasource.default.url: "jdbc:postgresql://postgres.edc.svc.cluster.local:5432/consumercontrolplane"
+  edc.datasource.default.user: "ccp"
+  edc.datasource.default.password: "ccp"
+
+  edc.encryption.aes.key.alias: "aes-key-alias"
+
+  tx.edc.iam.dcp.default-scopes.membership.alias: "org.eclipse.dspace.dcp.vc.type"
+  tx.edc.iam.dcp.default-scopes.membership.type: "https://w3id.org/catenax/credentials/MembershipCredential"
+  tx.edc.iam.dcp.default-scopes.membership.operation: "read"
+
+  tx.edc.iam.dcp.default-scopes.bpn.alias: "org.eclipse.dspace.dcp.vc.type"
+  tx.edc.iam.dcp.default-scopes.bpn.type: "https://w3id.org/catenax/credentials/BpnCredential"
+  tx.edc.iam.dcp.default-scopes.bpn.operation: "read"
+
+  tx.edc.iam.dcp.default-scopes.deg.alias: "org.eclipse.dspace.dcp.vc.type"
+  tx.edc.iam.dcp.default-scopes.deg.type: "https://w3id.org/catenax/credentials/DataExchangeGovernanceCredential"
+  tx.edc.iam.dcp.default-scopes.deg.operation: "read"
+
+  edc.iam.trustedissuer.issuer.id: "did:web:issuerservice.edc.svc.cluster.local%3A10016:issuer"
+
+  JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044"

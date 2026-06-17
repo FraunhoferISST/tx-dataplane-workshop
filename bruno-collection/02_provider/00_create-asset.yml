@@ -1,0 +1,40 @@
+info:
+  name: 00_create-asset
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{provider}}/api/management/v4/assets"
+  body:
+    type: json
+    data: |-
+      {
+          "@context": [
+            "https://w3id.org/edc/connector/management/v2"
+          ],
+          "@type": "Asset",
+          "@id": "{{asset-id}}",
+          "properties": {
+            "description": "This is a test asset."
+          },
+          "dataplaneMetadata": {
+            "@type": "DataplaneMetadata",
+            "properties": {
+
+            },
+            "labels": [
+              
+            ],
+            "profiles": [
+              
+            ]
+          }
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
