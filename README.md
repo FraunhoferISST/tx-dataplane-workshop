@@ -7,7 +7,7 @@ between the control plane and our backend application.
 
 The following prerequisites are required to run the workshop setup:
 
-- Java 17+
+- Java 21
 - [Docker](https://docs.docker.com/engine/install/)
 - [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
@@ -16,6 +16,8 @@ The following prerequisites are required to run the workshop setup:
 - [Node.js](https://nodejs.org/en/download)/[npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) (for running npx/the Bruno CLI)
 - [Bruno](https://www.usebruno.com/downloads)
 - [optional] a Kubernetes monitoring tool like [k9s](https://k9scli.io/topics/install/) or [Lens](https://docs.k8slens.dev/k8slens/getting-started/install-lens/)
+
+**If you are using a Windows laptop, using a VM or WSL is required for the commands below to work!**
 
 ## The setup
 
@@ -199,7 +201,14 @@ arbitrary key-value pair for each mapping - we'll see how they relate to differe
 endpoint, use a different variation of `http://provider.localhost/api/dp/data/download/{id}` for each mapping, replacing
 `{id}` with an arbitrary string.
 
-#### 2. Create assets
+After changing the Siglet's configuration, it needs to be redeployed for the changes to take effect. For this, just run
+the deployment command again:
+
+```shell
+kubectl apply -k deployment/
+```
+
+#### 2. How to create assets
 
 For this task, we cannot re-use the asset from the first tasks, as this is missing one important thing: the 
 `dataplaneMetadata`. This is a collection of additional information in relation to the data plane. If you take
@@ -214,12 +223,15 @@ does not cause any issues, as
 - empty `labels` match all registered data planes disregarding of the labels they're tagged with
 - empty `profiles` mean all transfer types supported by the registered data plane are used
 
-#### 3. Run a transfer for both assets
+#### 3. Run a transfer for 2 different assets
 
 To verify that different endpoints are used for different assets, run the following steps twice (once for each
 `[[transfer_types.endpoint_mappings]]` entry you defined in the Siglet configuration):
 - change the `asset-id` in the Bruno environment to a new value
+- change the `contract-definition-id` in the Bruno environment to a new value
 - update the request body for the create-asset-request: add the key-value pair defined in the [[transfer_types.endpoint_mappings]] entry to the `properties` of the `dataplaneMetadata`
+- run the request `02_provider/03_create-contract-definition` again so that the new asset is available under the pre-defined policies
+- in the response to the catalog request, look for the `dataset` entry with your new asset id and copy the dataset's policy's `@id` into the `offer-id` environment variable
 - run the subsequent requests from the Bruno collection in order (keep everything else as-is, the asset ID will automatically be updated as defined in the Bruno environment)
 - after running the request `04_consumer_transfer/02_fetch-token`, the endpoint in the response should match the one defined in the [[transfer_types.endpoint_mappings]] of which the key-value pair as added to the asset
 
