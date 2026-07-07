@@ -20,9 +20,9 @@ http:
           "assetsSelector": [
             {
               "@type": "Criterion",
-              "operandLeft": "https://w3id.org/edc/v0.0.1/ns/id",
+              "operandLeft": "https://w3id.org/edc/v0.0.1/ns/description",
               "operator" : "=",
-              "operandRight" : "test"
+              "operandRight" : "This is a test asset."
             }
           ]
       }

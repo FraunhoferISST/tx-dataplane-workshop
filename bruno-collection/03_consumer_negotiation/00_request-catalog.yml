@@ -22,12 +22,18 @@ http:
 
 runtime:
   scripts:
-    - type: tests
+    - type: after-response
       code: |-
         if(res.status >= 200 && res.status <= 299) {
-          const policyId = res.getBody()["dataset"][0]["hasPolicy"][0]["@id"];
+          const assetId = bru.getEnvVar("asset-id");
           
-          bru.setEnvVar("offer-id", policyId);
+          const datasets = res.getBody()["dataset"];
+          const dataset = datasets.find(ds => ds?.["@id"] === assetId);
+          
+          if (dataset) {
+            const policyId = dataset["hasPolicy"][0]["@id"];
+            bru.setEnvVar("offer-id", policyId);
+          }
         }
 
 settings:

@@ -228,10 +228,8 @@ does not cause any issues, as
 To verify that different endpoints are used for different assets, run the following steps twice (once for each
 `[[transfer_types.endpoint_mappings]]` entry you defined in the Siglet configuration):
 - change the `asset-id` in the Bruno environment to a new value
-- change the `contract-definition-id` in the Bruno environment to a new value
 - update the request body for the create-asset-request: add the key-value pair defined in the [[transfer_types.endpoint_mappings]] entry to the `properties` of the `dataplaneMetadata`
-- run the request `02_provider/03_create-contract-definition` again so that the new asset is available under the pre-defined policies
-- in the response to the catalog request, look for the `dataset` entry with your new asset id and copy the dataset's policy's `@id` into the `offer-id` environment variable
+- policies and contract definition do **not** need to be recreated, as the original contract definition matches assets by their description (so as long as you didn't change the asset's description, the contract definition automatically applies)
 - run the subsequent requests from the Bruno collection in order (keep everything else as-is, the asset ID will automatically be updated as defined in the Bruno environment)
 - after running the request `04_consumer_transfer/02_fetch-token`, the endpoint in the response should match the one defined in the [[transfer_types.endpoint_mappings]] of which the key-value pair as added to the asset
 
