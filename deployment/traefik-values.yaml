@@ -11,6 +11,7 @@ ports:
   web:
     port: 8000
     exposedPort: 8000
+    hostPort: 80
   websecure:
     port: 443
     exposedPort: 443
